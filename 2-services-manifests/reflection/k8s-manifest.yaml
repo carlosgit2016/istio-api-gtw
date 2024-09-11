@@ -1,0 +1,538 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  
+  labels:
+    app: alpha
+  name: alpha
+  namespace: mesh-example
+spec:
+  ports:
+  - name: 8080-80
+    port: 8080
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: alpha
+  type: ClusterIP
+status:
+  loadBalancer: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "3"
+  
+  generation: 3
+  labels:
+    app: alpha
+  name: alpha
+  namespace: mesh-example
+  
+  
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: alpha
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      
+      labels:
+        app: alpha
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: agentpool
+                operator: NotIn
+                values:
+                - default
+      containers:
+      - env:
+        - name: HTTP_CODE
+          value: "200"
+        - name: METADATA_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.name
+        - name: METADATA_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: spec.nodeName
+        - name: SERVICE_ACCOUNT
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: spec.serviceAccountName
+        - name: HOST_IP
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: status.hostIP
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: status.podIP
+        - name: DOWNSTREAM_SERVICES
+          value: beta,gamma
+        image: carlosflor25/reflection:v3
+        imagePullPolicy: IfNotPresent
+        name: reflection
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      tolerations:
+      - effect: NoSchedule
+        key: kubernetes.azure.com/scalesetpriority
+        operator: Equal
+        value: spot
+status:
+  conditions:
+  - lastTransitionTime: "2024-09-10T11:11:48Z"
+    lastUpdateTime: "2024-09-10T11:11:48Z"
+    message: Deployment does not have minimum availability.
+    reason: MinimumReplicasUnavailable
+    status: "False"
+    type: Available
+  - lastTransitionTime: "2024-09-10T11:11:48Z"
+    lastUpdateTime: "2024-09-10T11:11:51Z"
+    message: ReplicaSet "alpha-854b58c5c9" is progressing.
+    reason: ReplicaSetUpdated
+    status: "True"
+    type: Progressing
+  observedGeneration: 3
+  replicas: 2
+  unavailableReplicas: 2
+  updatedReplicas: 1
+...
+---
+apiVersion: v1
+kind: Service
+metadata:
+  
+  labels:
+    app: beta
+  name: beta
+  namespace: mesh-example
+spec:
+  ports:
+  - name: 8080-80
+    port: 8080
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: beta
+  type: ClusterIP
+status:
+  loadBalancer: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "3"
+  
+  generation: 3
+  labels:
+    app: beta
+  name: beta
+  namespace: mesh-example
+  
+  
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: beta
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      
+      labels:
+        app: beta
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: agentpool
+                operator: NotIn
+                values:
+                - default
+      containers:
+      - env:
+        - name: HTTP_CODE
+          value: "200"
+        - name: METADATA_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.name
+        - name: METADATA_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: spec.nodeName
+        - name: SERVICE_ACCOUNT
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: spec.serviceAccountName
+        - name: HOST_IP
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: status.hostIP
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: status.podIP
+        - name: DOWNSTREAM_SERVICES
+        image: carlosflor25/reflection:v3
+        imagePullPolicy: IfNotPresent
+        name: reflection
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      tolerations:
+      - effect: NoSchedule
+        key: kubernetes.azure.com/scalesetpriority
+        operator: Equal
+        value: spot
+status:
+  conditions:
+  - lastTransitionTime: "2024-09-10T11:11:54Z"
+    lastUpdateTime: "2024-09-10T11:11:54Z"
+    message: Deployment does not have minimum availability.
+    reason: MinimumReplicasUnavailable
+    status: "False"
+    type: Available
+  - lastTransitionTime: "2024-09-10T11:11:54Z"
+    lastUpdateTime: "2024-09-10T11:11:58Z"
+    message: ReplicaSet "beta-7f8d7c597d" is progressing.
+    reason: ReplicaSetUpdated
+    status: "True"
+    type: Progressing
+  observedGeneration: 3
+  replicas: 2
+  unavailableReplicas: 2
+  updatedReplicas: 1
+...
+---
+apiVersion: v1
+kind: Service
+metadata:
+  
+  labels:
+    app: gamma
+  name: gamma
+  namespace: mesh-example
+spec:
+  ports:
+  - name: 8080-80
+    port: 8080
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: gamma
+  type: ClusterIP
+status:
+  loadBalancer: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "3"
+  
+  generation: 3
+  labels:
+    app: gamma
+  name: gamma
+  namespace: mesh-example
+  
+  
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: gamma
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      
+      labels:
+        app: gamma
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: agentpool
+                operator: NotIn
+                values:
+                - default
+      containers:
+      - env:
+        - name: HTTP_CODE
+          value: "200"
+        - name: METADATA_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.name
+        - name: METADATA_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: spec.nodeName
+        - name: SERVICE_ACCOUNT
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: spec.serviceAccountName
+        - name: HOST_IP
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: status.hostIP
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: status.podIP
+        - name: DOWNSTREAM_SERVICES
+          value: delta
+        image: carlosflor25/reflection:v3
+        imagePullPolicy: IfNotPresent
+        name: reflection
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      tolerations:
+      - effect: NoSchedule
+        key: kubernetes.azure.com/scalesetpriority
+        operator: Equal
+        value: spot
+status:
+  conditions:
+  - lastTransitionTime: "2024-09-10T11:12:01Z"
+    lastUpdateTime: "2024-09-10T11:12:01Z"
+    message: Deployment does not have minimum availability.
+    reason: MinimumReplicasUnavailable
+    status: "False"
+    type: Available
+  - lastTransitionTime: "2024-09-10T11:12:01Z"
+    lastUpdateTime: "2024-09-10T11:12:04Z"
+    message: ReplicaSet "gamma-6b8b95986c" is progressing.
+    reason: ReplicaSetUpdated
+    status: "True"
+    type: Progressing
+  observedGeneration: 3
+  replicas: 2
+  unavailableReplicas: 2
+  updatedReplicas: 1
+...
+---
+apiVersion: v1
+kind: Service
+metadata:
+  
+  labels:
+    app: delta
+  name: delta
+  namespace: mesh-example
+spec:
+  ports:
+  - name: 8080-80
+    port: 8080
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: delta
+  type: ClusterIP
+status:
+  loadBalancer: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "3"
+  
+  generation: 3
+  labels:
+    app: delta
+  name: delta
+  namespace: mesh-example
+  
+  
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: delta
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      
+      labels:
+        app: delta
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: agentpool
+                operator: NotIn
+                values:
+                - default
+      containers:
+      - env:
+        - name: HTTP_CODE
+          value: "200"
+        - name: METADATA_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.name
+        - name: METADATA_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: spec.nodeName
+        - name: SERVICE_ACCOUNT
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: spec.serviceAccountName
+        - name: HOST_IP
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: status.hostIP
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: status.podIP
+        - name: DOWNSTREAM_SERVICES
+        image: carlosflor25/reflection:v3
+        imagePullPolicy: IfNotPresent
+        name: reflection
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      tolerations:
+      - effect: NoSchedule
+        key: kubernetes.azure.com/scalesetpriority
+        operator: Equal
+        value: spot
+status:
+  conditions:
+  - lastTransitionTime: "2024-09-10T11:12:08Z"
+    lastUpdateTime: "2024-09-10T11:12:08Z"
+    message: Deployment does not have minimum availability.
+    reason: MinimumReplicasUnavailable
+    status: "False"
+    type: Available
+  - lastTransitionTime: "2024-09-10T11:12:08Z"
+    lastUpdateTime: "2024-09-10T11:12:11Z"
+    message: ReplicaSet "delta-7575ddffbb" is progressing.
+    reason: ReplicaSetUpdated
+    status: "True"
+    type: Progressing
+  observedGeneration: 3
+  replicas: 2
+  unavailableReplicas: 2
+  updatedReplicas: 1
+...

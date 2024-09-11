@@ -1,0 +1,15 @@
+apiVersion: security.istio.io/v1
+kind: RequestAuthentication
+metadata:
+  name: "jwt"
+  namespace: mesh-example 
+spec:
+  targetRef:
+    kind: Gateway
+    group: gateway.networking.k8s.io
+    name: api-gateway-istio
+  jwtRules:
+# - issuer: "my-dumb-test@test.com"
+#   jwksUri: "https://raw.githubusercontent.com/istio/istio/release-1.23/security/tools/jwt/samples/jwks.json"
+  - issuer: "testing@secure.istio.io"
+    jwksUri: "https://raw.githubusercontent.com/istio/istio/release-1.23/security/tools/jwt/samples/jwks.json"
