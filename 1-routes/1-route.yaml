@@ -1,0 +1,68 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: httproute-auth
+  namespace: mesh-example
+spec:
+  parentRefs:
+    - name: api-gateway-istio
+      namespace: mesh-example
+  hostnames:
+    - auth.staging.telematicsplatform.tools
+  rules:
+    # Route for all "/auth/**" paths except Swagger-related paths
+    - matches:
+        - path:
+            value: /auth
+            type: PathPrefix
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              replacePrefixMatch: /
+              type: ReplacePrefixMatch
+      backendRefs:
+        - name: core-motorista 
+          port: 8080
+    # Route for "/auth/swagger-ui.html"
+    - matches:
+        - path:
+            value: /auth/swagger-ui.html
+            type: Exact
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              replaceFullPath: /swagger-ui.html
+              type: ReplaceFullPath
+      backendRefs:
+        - name: gamma 
+          port: 8080
+    # Route for "/auth/swagger-resources/"
+    - matches:
+        - path:
+            value: /auth/swagger-resources/
+            type: PathPrefix
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              replacePrefixMatch: /swagger-resources/
+              type: ReplacePrefixMatch
+      backendRefs:
+        - name: gamma 
+          port: 8080
+    # Route for "/auth/v3/api-docs/"
+    - matches:
+        - path:
+            value: /auth/v3/api-docs/
+            type: PathPrefix
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              replacePrefixMatch: /v3/api-docs/
+              type: ReplacePrefixMatch
+      backendRefs:
+        - name: gamma 
+          port: 8080

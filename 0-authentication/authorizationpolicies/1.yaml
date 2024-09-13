@@ -15,7 +15,7 @@ spec:
         # if <ISS>/<SUB> from the jwt headers do not include any of these values the request will be denied 
         requestPrincipals: ["testing@secure.istio.io/testing@secure.istio.io"]
         ipBlocks: [
-          "206.0.94.183"
+          "206.0.94.183/32"
         ]
     to:
       - operation:
@@ -26,4 +26,3 @@ spec:
   - to:
       - operation:
           paths: ["/noauth"]
-
